@@ -1059,12 +1059,22 @@ async function saveStockOut(){
     outbounds.push(rec);
     movements.push({type:'OUT',docId:rec.id,pid,product_name:p?p.name:'',unit:p?p.unit:'',qty,note:reason,timestamp:rec.timestamp,user:rec.user,void:false,isVoid:false,isCorrection:false});
 
-    // อัปเดตสถานะใบเบิกที่มี pid นี้เป็น completed
-    const docIdx = outDocs.findIndex(d => !d.void && d.status==='pending' && d.items && d.items.some(it=>it.pid===pid));
-    if(docIdx>=0){
-      outDocs[docIdx].status = 'completed';
-      await apiPost('save_outdoc', {...outDocs[docIdx], items_json: JSON.stringify(outDocs[docIdx].items)});
-    }
+    // อัปเดตสถานะใบเบิกถ้าตัดครบทุกรายการแล้ว
+const docIdx = outDocs.findIndex(d => !d.void && d.status==='pending' && d.items && d.items.some(it=>it.pid===pid));
+if(docIdx>=0){
+  const doc = outDocs[docIdx];
+  // เช็คว่าทุก pid ในใบเบิกถูกตัดสต๊อกแล้วหรือยัง
+  const allDone = doc.items.every(it => 
+    outbounds.some(ob => !ob.void && ob.pid===it.pid && 
+      outbounds.filter(x=>!x.void && x.pid===it.pid)
+        .reduce((s,x)=>s+x.qty,0) >= it.qty
+    )
+  );
+  if(allDone){
+    outDocs[docIdx].status = 'completed';
+    await apiPost('save_outdoc', {...outDocs[docIdx], items_json: JSON.stringify(outDocs[docIdx].items)});
+  }
+}
 
     setSyncStatus('synced');
     toast('ตัดสต๊อกสำเร็จ: '+qty+' '+(p?p.unit:''),'ok');
