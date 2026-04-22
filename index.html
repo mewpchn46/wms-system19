@@ -1071,8 +1071,16 @@ if(docIdx>=0){
     )
   );
   if(allDone){
-    outDocs[docIdx].status = 'completed';
-    await apiPost('save_outdoc', {...outDocs[docIdx], items_json: JSON.stringify(outDocs[docIdx].items)});
+  console.log('allDone! updating DOC:', outDocs[docIdx].id);
+  outDocs[docIdx].status = 'completed';
+  console.log('new status:', outDocs[docIdx].status);
+  try {
+    const r = await apiPost('save_outdoc', {...outDocs[docIdx], items_json: JSON.stringify(outDocs[docIdx].items)});
+    console.log('save_outdoc result:', JSON.stringify(r));
+  } catch(e) {
+    console.error('save_outdoc error:', e.message);
+  }
+}
   }
 }
 
