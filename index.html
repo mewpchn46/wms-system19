@@ -1055,12 +1055,20 @@ async function saveStockOut(){
   const rec={id:autoId('OUT-',outbounds),pid,product_name:p?p.name:'',unit:p?p.unit:'',qty,reason,timestamp:now(),user:'พนักงาน',void:false};
   setSyncStatus('syncing');
   try {
-    await apiPost('save_outbound', rec);  // ✅ แก้จาก saveOutbound
+    await apiPost('save_outbound', rec);
     outbounds.push(rec);
     movements.push({type:'OUT',docId:rec.id,pid,product_name:p?p.name:'',unit:p?p.unit:'',qty,note:reason,timestamp:rec.timestamp,user:rec.user,void:false,isVoid:false,isCorrection:false});
+
+    // อัปเดตสถานะใบเบิกที่มี pid นี้เป็น completed
+    const docIdx = outDocs.findIndex(d => !d.void && d.status==='pending' && d.items && d.items.some(it=>it.pid===pid));
+    if(docIdx>=0){
+      outDocs[docIdx].status = 'completed';
+      await apiPost('save_outdoc', {...outDocs[docIdx], items_json: JSON.stringify(outDocs[docIdx].items)});
+    }
+
     setSyncStatus('synced');
     toast('ตัดสต๊อกสำเร็จ: '+qty+' '+(p?p.unit:''),'ok');
-    soClear(); renderSOHist(); renderDashboard(); updateAlertBadge();
+    soClear(); renderSOHist(); renderDashboard(); updateAlertBadge(); renderObDocs();
   } catch(e){setSyncStatus('error');toast('บันทึกไม่สำเร็จ: '+e.message,'err');}
 }
 
