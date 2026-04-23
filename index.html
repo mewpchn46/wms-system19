@@ -789,7 +789,8 @@ async function loadAllData(){
     movements = movements.map(r=>({...r, qty:Number(r.qty)||0, void:r.void==='TRUE'||r.void===true,
       isVoid:r.isVoid==='TRUE'||r.isVoid===true, isCorrection:r.isCorrection==='TRUE'||r.isCorrection===true}));
     outDocs   = outDocs.map(d=>({...d, total:Number(d.total)||0, void:d.void==='TRUE'||d.void===true,
-      items: safeParseJSON(d.items_json, [])}));
+  items: safeParseJSON(d.items_json, []),
+  poRef: d.po_ref || d.poRef || ''}));
     poDocs    = poDocs.map(d=>({...d, total:Number(d.total)||0, void:d.void==='TRUE'||d.void===true,
       items: safeParseJSON(d.items_json, [])}));
     products  = products.map(p=>({...p, price:Number(p.price)||0, custom:p.custom==='TRUE'||p.custom===true,
