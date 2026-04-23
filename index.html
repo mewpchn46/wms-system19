@@ -760,8 +760,9 @@ let movements = [];
 let outDocs   = [];
 let poDocs    = [];
 let productImages = {};
-let pickItems = {};
+let pickItems = {}; 
 let poItems   = {};
+let currentPoRef = '';
 
 // ==================== LOAD ALL DATA ====================
 // ✅ แก้ไข action names ให้ตรงกับ Apps Script ทั้งหมด
@@ -1352,6 +1353,7 @@ function viewPODoc(id){
 function createPickFromPO(poId){
   closeModal();const doc=poDocs.find(d=>d.id===poId);if(!doc)return;
   pickItems={};doc.items.forEach(it=>{pickItems[it.pid]={qty:it.qty}});
+  currentPoRef = poId;
   goto('outbound');
   setTimeout(()=>{
     document.querySelectorAll('.ob-tab')[0].click();
@@ -1393,11 +1395,11 @@ function renderPickList(){
 }
 function updatePickQty(pid,v){pickItems[pid].qty=Math.max(1,parseInt(v)||1);renderPickList();}
 function removePickItem(pid){delete pickItems[pid];renderPickList();}
-function clearPicking(){pickItems={};renderPickList();const poRef=document.getElementById('ob-po-ref');if(poRef)poRef.value='';const infoEl=document.getElementById('ob-po-ref-info');if(infoEl)infoEl.style.display='none';}
+function clearPicking(){pickItems={};currentPoRef='';renderPickList();const poRef=document.getElementById('ob-po-ref');if(poRef)poRef.value='';const infoEl=document.getElementById('ob-po-ref-info');if(infoEl)infoEl.style.display='none';}
 
 async function generatePickingList(){
   const pids=Object.keys(pickItems);if(pids.length===0){toast('กรุณาเพิ่มสินค้าก่อน','err');return;}
-  const poRefId=(document.getElementById('ob-po-ref')||{}).value||'';
+  const poRefId=(document.getElementById('ob-po-ref')||{}).value||currentPoRef||'';
   const docId=autoId('DOC-',outDocs);const ts=now();let total=0;
   const items=pids.map(pid=>{const p=getProduct(pid);const qty=pickItems[pid].qty;const sub=p.price*qty;total+=sub;return{pid,name:p.name,unit:p.unit,qty,price:p.price,subtotal:sub};});
   const doc={id:docId,timestamp:ts,items,total,status:'pending',poRef:poRefId,void:false};
