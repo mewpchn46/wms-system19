@@ -1353,7 +1353,14 @@ function createPickFromPO(poId){
   closeModal();const doc=poDocs.find(d=>d.id===poId);if(!doc)return;
   pickItems={};doc.items.forEach(it=>{pickItems[it.pid]={qty:it.qty}});
   goto('outbound');
-  setTimeout(()=>{document.querySelectorAll('.ob-tab')[0].click();const poRef=document.getElementById('ob-po-ref');if(poRef)poRef.value=poId;loadFromPO(poId);renderPickList();toast('โหลดรายการจาก '+poId+' แล้ว','ok');},150);
+  setTimeout(()=>{
+    document.querySelectorAll('.ob-tab')[0].click();
+    const poRef=document.getElementById('ob-po-ref');
+    if(poRef){poRef.value=poId;}
+    loadFromPO(poId);
+    renderPickList();
+    toast('โหลดรายการจาก '+poId+' แล้ว','ok');
+  },300);
 }
 function loadFromPO(poId){
   const infoEl=document.getElementById('ob-po-ref-info');const textEl=document.getElementById('ob-po-ref-text');
