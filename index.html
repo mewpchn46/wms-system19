@@ -1080,6 +1080,14 @@ if(docIdx>=0){
     } catch(e) {
       console.error('save_outdoc error:', e.message);
     }
+    // อัปเดต PO ด้วยถ้ามี poRef
+    if(doc.poRef){
+      const poIdx=poDocs.findIndex(d=>d.id===doc.poRef&&!d.void);
+      if(poIdx>=0){
+        poDocs[poIdx].status='completed';
+        await apiPost('update_po_status',{id:doc.poRef,status:'completed'});
+      }
+    }
   }
 }
 
