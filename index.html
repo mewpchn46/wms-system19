@@ -794,7 +794,8 @@ async function loadAllData(){
     poDocs    = poDocs.map(d=>({...d, total:Number(d.total)||0, void:d.void==='TRUE'||d.void===true,
       items: safeParseJSON(d.items_json, [])}));
     products  = products.map(p=>({...p, price:Number(p.price)||0, custom:p.custom==='TRUE'||p.custom===true,
-      override_base:p.override_base==='TRUE'||p.override_base===true}));
+  override_base:p.override_base==='TRUE'||p.override_base===true,
+  image_url:p.image_url||''}));
 
     setSyncStatus('synced');
     populateAllSelects();
@@ -817,7 +818,10 @@ function safeParseJSON(str, def){
 // ==================== DATA HELPERS ====================
 function getAllProducts(){ return products; }
 function getProduct(id){ return products.find(p=>p.id===id); }
-function getProductImg(pid){ return productImages[pid]||null; }
+function getProductImg(pid){ 
+  const p=getProduct(pid);
+  return productImages[pid]||(p&&p.image_url?p.image_url:null);
+}
 
 function getStock(pid){
   const tin  = inbounds.filter(r=>r.pid===pid&&!r.void).reduce((s,r)=>s+r.qty,0);
