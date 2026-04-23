@@ -1228,7 +1228,7 @@ async function generatePO(){
 function renderPODocs(){
   const tb=document.getElementById('po-doc-list');if(!tb)return;
   tb.innerHTML=[...poDocs].reverse().map(d=>{
-    const voidBadge=d.void?'<span class="badge void">ยกเลิกแล้ว</span>':'<span class="badge pending">รอดำเนินการ</span>';
+    const voidBadge=d.void?'<span class="badge void">ยกเลิกแล้ว</span>':d.status==='completed'?'<span class="badge ok">เสร็จสิ้น</span>':d.status==='picking'?'<span class="badge in">สร้างใบเบิกแล้ว</span>':'<span class="badge pending">รอดำเนินการ</span>';
     const cls=d.void?'void-row':'';
     const actions=d.void
       ?`<span style="font-size:11px;color:var(--text-muted)">ยกเลิกแล้ว</span>`
@@ -1390,7 +1390,14 @@ async function generatePickingList(){
   try {
     await apiPost('save_outdoc',{...doc,items_json:JSON.stringify(items)});  // ✅ แก้จาก saveOutDoc
     outDocs.push(doc);
-    setSyncStatus('synced');
+if(poRefId){
+  const poIdx=poDocs.findIndex(d=>d.id===poRefId&&!d.void);
+  if(poIdx>=0){
+    poDocs[poIdx].status='picking';
+    await apiPost('update_po_status',{id:poRefId,status:'picking'});
+  }
+}
+setSyncStatus('synced');
     toast('สร้างใบเบิก '+docId+' สำเร็จ','ok');
     clearPicking(); renderObDocs(); viewPickDoc(docId);
   } catch(e){setSyncStatus('error');toast('สร้างไม่สำเร็จ: '+e.message,'err');}
@@ -1399,7 +1406,7 @@ async function generatePickingList(){
 function renderObDocs(){
   const tb=document.getElementById('ob-doc-list');if(!tb)return;
   tb.innerHTML=[...outDocs].reverse().map(d=>{
-    const voidBadge=d.void?'<span class="badge void">ยกเลิกแล้ว</span>':d.status==='completed'?'<span class="badge ok">เสร็จสิ้น</span>':'<span class="badge pending">รอดำเนินการ</span>';
+    const voidBadge=d.void?'<span class="badge void">ยกเลิกแล้ว</span>':d.status==='completed'?'<span class="badge ok">เสร็จสิ้น</span>':d.status==='picking'?'<span class="badge in">สร้างใบเบิกแล้ว</span>':'<span class="badge pending">รอดำเนินการ</span>';
     const cls=d.void?'void-row':'';
     const actions=d.void
       ?`<span style="font-size:11px;color:var(--text-muted)">ยกเลิกแล้ว</span>`
