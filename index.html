@@ -1060,11 +1060,11 @@ const rec={id:autoId('OUT-',outbounds),pid,product_name:p?p.name:'',unit:p?p.uni
     movements.push({type:'OUT',docId:rec.id,pid,product_name:p?p.name:'',unit:p?p.unit:'',qty,note:reason,timestamp:rec.timestamp,user:rec.user,void:false,isVoid:false,isCorrection:false});
 
     // อัปเดตสถานะใบเบิกถ้าตัดครบทุกรายการแล้ว
-const docIdx = outDocs.findIndex(d => !d.void && d.status==='pending' && d.items && d.items.some(it=>it.pid===pid));
+const docIdx = matchDoc ? outDocs.findIndex(d=>d.id===matchDoc.id) : -1;
 if(docIdx>=0){
   const doc = outDocs[docIdx];
  const docOutbounds=[...outbounds,rec].filter(x=>!x.void&&x.doc_ref===doc.id);
-const allDone=doc.items.every(it=>
+const allDone=docOutbounds.length>0&&doc.items.every(it=>
   docOutbounds.filter(x=>x.pid===it.pid).reduce((s,x)=>s+x.qty,0)>=it.qty
 );
 if(allDone){
