@@ -1051,14 +1051,14 @@ async function saveStockOut(){
   const stk=getStock(pid);
   if(qty>stk){toast('สต๊อกไม่พอ! มีเพียง '+stk+' '+getProduct(pid).unit,'err');return;}
   const p=getProduct(pid);
-  const pendingDocs=outDocs.filter(d=>!d.void&&d.status==='pending'&&d.items&&d.items.some(it=>it.pid===pid));const matchDoc=pendingDocs.sort((a,b)=>{const aqty=a.items.find(it=>it.pid===pid)?.qty||0;const bqty=b.items.find(it=>it.pid===pid)?.qty||0;return Math.abs(aqty-qty)-Math.abs(bqty-qty);})[0]||null;
+const exactMatch = pendingDocs.find(d => d.items.find(it => it.pid === pid)?.qty === qty);
+const matchDoc = exactMatch || pendingDocs[0] || null;
 const rec={id:autoId('OUT-',outbounds),pid,product_name:p?p.name:'',unit:p?p.unit:'',qty,reason,doc_ref:matchDoc?matchDoc.id:'',timestamp:now(),user:'พนักงาน',void:false};
   setSyncStatus('syncing');
   try {
     await apiPost('save_outbound', rec);
     outbounds.push(rec);
     movements.push({type:'OUT',docId:rec.id,pid,product_name:p?p.name:'',unit:p?p.unit:'',qty,note:reason,timestamp:rec.timestamp,user:rec.user,void:false,isVoid:false,isCorrection:false});
-
     // อัปเดตสถานะใบเบิกถ้าตัดครบทุกรายการแล้ว
 const docIdx = matchDoc ? outDocs.findIndex(d=>d.id===matchDoc.id) : -1;
 if(docIdx>=0){
