@@ -1200,7 +1200,7 @@ function renderPOItemList(){
   el.innerHTML=pids.map(pid=>{
     const p=getProduct(pid);const qty=poItems[pid].qty;const sub=p.price*qty;total+=sub;
     const img=getProductImg(pid);
-    const thumb=img?`<img class="pthumb" src="${img}">`:`<div class="pthumb-empty">📦</div>`;
+    const thumb=img?`<img src="${img}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0">`:`<div style="width:60px;height:60px;border-radius:8px;background:#f0f3f8;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">📦</div>`;
     return`<div class="po-item" style="flex-direction:column;align-items:flex-start">
   <div style="display:flex;align-items:center;gap:10px;width:100%">
     <div style="width:60px;height:60px;flex-shrink:0">${thumb}</div>
@@ -1392,7 +1392,7 @@ function renderPickList(){
   let total=0;
   el.innerHTML=pids.map(pid=>{
     const p=getProduct(pid);const qty=pickItems[pid].qty;const sub=p.price*qty;total+=sub;
-    const img=getProductImg(pid);const thumb=img?`<img class="pthumb" src="${img}">`:`<div class="pthumb-empty">📦</div>`;
+    const img=getProductImg(pid);const thumb=img?`<img src="${img}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0">`:`<div style="width:60px;height:60px;border-radius:8px;background:#f0f3f8;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">📦</div>`;
     return`<div class="pick-item">${thumb}<div class="pname">${p.id}<small>${p.name}</small></div>
       <input class="pqty" type="number" min="1" value="${qty}" onchange="updatePickQty('${pid}',this.value)">
       <div class="pprice">฿${fmt(p.price)}/${p.unit}<br><b style="color:var(--primary)">฿${fmt(sub)}</b></div>
