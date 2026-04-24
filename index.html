@@ -1051,6 +1051,7 @@ async function saveStockOut(){
   const stk=getStock(pid);
   if(qty>stk){toast('สต๊อกไม่พอ! มีเพียง '+stk+' '+getProduct(pid).unit,'err');return;}
   const p=getProduct(pid);
+const pendingDocs = outDocs.filter(d => !d.void && d.status === 'pending' && d.items.some(it => it.pid === pid));
 const exactMatch = pendingDocs.find(d => d.items.find(it => it.pid === pid)?.qty === qty);
 const matchDoc = exactMatch || pendingDocs[0] || null;
 const rec={id:autoId('OUT-',outbounds),pid,product_name:p?p.name:'',unit:p?p.unit:'',qty,reason,doc_ref:matchDoc?matchDoc.id:'',timestamp:now(),user:'พนักงาน',void:false};
