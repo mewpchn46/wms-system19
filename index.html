@@ -1802,8 +1802,9 @@ function renderDashboard(){
   const PRODUCTS=getAllProducts();
   document.getElementById('st-total').textContent=PRODUCTS.length;
   const todayStr=today();
-  const inToday=inbounds.filter(r=>r.timestamp.includes(todayStr)&&!r.void).reduce((s,r)=>s+r.qty,0);
-  const outToday=outbounds.filter(r=>r.timestamp.includes(todayStr)&&!r.void).reduce((s,r)=>s+r.qty,0);
+const todayISO=new Date().toISOString().slice(0,10);
+const inToday=inbounds.filter(r=>(r.timestamp.includes(todayStr)||r.timestamp.includes(todayISO))&&!r.void).reduce((s,r)=>s+r.qty,0);
+const outToday=outbounds.filter(r=>(r.timestamp.includes(todayStr)||r.timestamp.includes(todayISO))&&!r.void).reduce((s,r)=>s+r.qty,0);
   const thresh=getLowThreshold();
   const lowCount=PRODUCTS.filter(p=>getStock(p.id)<thresh).length;
   document.getElementById('st-in').textContent=inToday;
