@@ -328,7 +328,7 @@ input[readonly]{background:#f7f8fa;cursor:default}
       <a href="#" onclick="goto('dashboard')" data-page="dashboard" class="active"><span class="icon">📊</span> Dashboard</a>
       <div class="nav-group">คลังสินค้า</div>
       <a href="#" onclick="goto('inbound')" data-page="inbound"><span class="icon">📥</span> รับสินค้า (Inbound)</a>
-      <a href="#" onclick="goto('orders')" data-page="orders"><span class="icon">🛒</span> คำสั่งซื้อ (SO)</a>
+      <a href="#" onclick="goto('orders')" data-page="orders"><span class="icon">🛒</span> คำสั่งขาย (SO)</a>
       <a href="#" onclick="goto('outbound')" data-page="outbound"><span class="icon">📤</span> เบิกสินค้า (Outbound)</a>
       <a href="#" onclick="goto('inventory')" data-page="inventory"><span class="icon">📦</span> สินค้าคงคลัง</a>
       <div class="nav-group">ข้อมูล</div>
@@ -420,13 +420,13 @@ input[readonly]{background:#f7f8fa;cursor:default}
       <!-- SALES ORDERS (SO) — เดิม PURCHASE ORDERS -->
       <div id="page-orders" class="section">
         <div class="card">
-          <div class="card-title"><span class="icon">🛒</span> สร้างคำสั่งซื้อ (SO) ใหม่</div>
+          <div class="card-title"><span class="icon">🛒</span> สร้างคำสั่งขาย (SO) ใหม่</div>
           <div class="form-grid" style="margin-bottom:14px">
             <div class="form-row"><label>ลูกค้า / ผู้สั่ง</label><input id="so-requester" placeholder="ชื่อลูกค้า หรือ แผนก"></div>
             <div class="form-row"><label>หมายเหตุ</label><input id="so-note" placeholder="(ไม่บังคับ)"></div>
           </div>
           <div class="form-row" style="margin-bottom:12px">
-            <label>เพิ่มสินค้าในคำสั่งซื้อ</label>
+            <label>เพิ่มสินค้าในคำสั่งขาย</label>
             <select id="so-pick-sel" onchange="addSOItem(this.value)"><option value="">-- เลือกสินค้า --</option></select>
           </div>
           <div id="so-item-list"></div>
@@ -434,12 +434,12 @@ input[readonly]{background:#f7f8fa;cursor:default}
             <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:var(--primary)"><span>รวมทั้งหมด</span><span id="so-total">฿0</span></div>
           </div>
           <div class="btn-row">
-            <button class="btn btn-primary" onclick="generateSO()">📄 สร้างคำสั่งซื้อ (SO)</button>
+            <button class="btn btn-primary" onclick="generateSO()">📄 สร้างคำสั่งขาย (SO)</button>
             <button class="btn btn-outline" onclick="clearSO()">🗑️ ล้าง</button>
           </div>
         </div>
         <div class="card">
-          <div class="card-title"><span class="icon">📁</span> คำสั่งซื้อ (SO) ทั้งหมด</div>
+          <div class="card-title"><span class="icon">📁</span> คำสั่งขาย (SO) ทั้งหมด</div>
           <div class="tbl-wrap">
             <table>
               <thead><tr><th>เลขที่ SO</th><th>วันที่/เวลา</th><th>ลูกค้า</th><th>จำนวนรายการ</th><th>ยอดรวม</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
@@ -893,7 +893,7 @@ function goto(page){
   document.getElementById('page-'+page).classList.add('active');
   const navEl=document.querySelector('[data-page='+page+']');if(navEl)navEl.classList.add('active');
   const titles={dashboard:'Dashboard',inbound:'รับสินค้า (Inbound)',outbound:'เบิกสินค้า (Outbound)',
-    orders:'คำสั่งซื้อ (SO)',inventory:'สินค้าคงคลัง',history:'ประวัติเคลื่อนไหว',
+    orders:'คำสั่งขาย (SO)',inventory:'สินค้าคงคลัง',history:'ประวัติเคลื่อนไหว',
     qrcodes:'QR Codes',products:'ข้อมูลสินค้า',reports:'รายงาน & Export',alerts:'แจ้งเตือน'};
   document.getElementById('page-title').textContent=titles[page]||page;
   curPage=page;closeSidebar();
@@ -1075,7 +1075,7 @@ async function generateSO(){
     await apiPost('save_so_doc',{...doc,items_json:JSON.stringify(items)});  // save_so_doc
     soDocs.push(doc);
     setSyncStatus('synced');
-    toast('สร้างคำสั่งซื้อ '+docId+' สำเร็จ','ok');
+    toast('สร้างคำสั่งขาย '+docId+' สำเร็จ','ok');
     clearSO();renderSODocs();viewSODoc(docId);
   }catch(e){setSyncStatus('error');toast('สร้างไม่สำเร็จ: '+e.message,'err');}
 }
@@ -1087,7 +1087,7 @@ function renderSODocs(){
     const cls=d.void?'void-row':'';
     const actions=d.void?`<span style="font-size:11px;color:var(--text-muted)">ยกเลิกแล้ว</span>`:`<div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="viewSODoc('${d.id}')">ดู</button><button class="btn btn-primary btn-sm" onclick="editSODoc('${d.id}')">✏️ แก้ไข</button><button class="btn btn-primary btn-sm" onclick="createPickFromSO('${d.id}')">สร้างใบเบิก</button><button class="btn btn-danger btn-sm" onclick="voidSODoc('${d.id}')">🚫 Void</button></div>`;
     return`<tr class="${cls}"><td><b>${d.id}</b></td><td>${formatDateTime(d.timestamp)}</td><td>${d.customer||'-'}</td><td>${d.items.length} รายการ</td><td>฿${fmt(d.total)}</td><td>${voidBadge}</td><td>${actions}</td></tr>`;
-  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">ยังไม่มีคำสั่งซื้อ</td></tr>';
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">ยังไม่มีคำสั่งขาย</td></tr>';
 }
 
 async function editSODoc(id){
@@ -1096,7 +1096,7 @@ async function editSODoc(id){
   document.getElementById('so-requester').value=doc.customer||'';
   document.getElementById('so-note').value=doc.note||'';
   renderSOItemList();closeModal();
-  showModal(`<div><div style="font-size:17px;font-weight:700;color:var(--primary);margin-bottom:12px">✏️ แก้ไขคำสั่งซื้อ ${id}</div><div class="alert warning">รายการสินค้าถูกโหลดลงแบบฟอร์มแล้ว — กรุณาแก้ไขและกด <b>อัปเดต SO</b></div><div class="form-row" style="margin-top:14px"><label>เหตุผลการแก้ไข *</label><textarea id="edit-so-doc-reason" style="border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;font-family:var(--font);resize:none;height:70px;width:100%" placeholder="ระบุเหตุผล..."></textarea></div><div class="btn-row no-print"><button class="btn btn-primary" onclick="confirmUpdateSO('${id}')">💾 อัปเดต SO</button><button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button></div></div>`);
+  showModal(`<div><div style="font-size:17px;font-weight:700;color:var(--primary);margin-bottom:12px">✏️ แก้ไขคำสั่งขาย ${id}</div><div class="alert warning">รายการสินค้าถูกโหลดลงแบบฟอร์มแล้ว — กรุณาแก้ไขและกด <b>อัปเดต SO</b></div><div class="form-row" style="margin-top:14px"><label>เหตุผลการแก้ไข *</label><textarea id="edit-so-doc-reason" style="border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;font-family:var(--font);resize:none;height:70px;width:100%" placeholder="ระบุเหตุผล..."></textarea></div><div class="btn-row no-print"><button class="btn btn-primary" onclick="confirmUpdateSO('${id}')">💾 อัปเดต SO</button><button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button></div></div>`);
 }
 
 async function confirmUpdateSO(oldId){
@@ -1120,13 +1120,13 @@ async function confirmUpdateSO(oldId){
 
 async function voidSODoc(id){
   const doc=soDocs.find(d=>d.id===id);if(!doc||doc.void)return;
-  const res=await showConfirm({icon:'🚫',title:'ยกเลิกคำสั่งซื้อ (SO)',desc:`${id} | ลูกค้า: ${doc.customer||'-'} | ${doc.items.length} รายการ | ฿${fmt(doc.total)}`,needReason:true,confirmLabel:'ยืนยันยกเลิก',confirmClass:'btn-danger'});
+  const res=await showConfirm({icon:'🚫',title:'ยกเลิกคำสั่งขาย (SO)',desc:`${id} | ลูกค้า: ${doc.customer||'-'} | ${doc.items.length} รายการ | ฿${fmt(doc.total)}`,needReason:true,confirmLabel:'ยืนยันยกเลิก',confirmClass:'btn-danger'});
   if(!res.ok)return;
   setSyncStatus('syncing');
   try{
     await apiPost('void_so_doc',{id,reason:res.reason});  // void_so_doc
     const idx=soDocs.findIndex(d=>d.id===id);soDocs[idx].void=true;soDocs[idx].voidReason=res.reason;
-    setSyncStatus('synced');toast('ยกเลิกคำสั่งซื้อ '+id+' สำเร็จ','ok');renderSODocs();
+    setSyncStatus('synced');toast('ยกเลิกคำสั่งขาย '+id+' สำเร็จ','ok');renderSODocs();
   }catch(e){setSyncStatus('error');toast('ยกเลิกไม่สำเร็จ: '+e.message,'err');}
 }
 
@@ -1134,7 +1134,7 @@ function viewSODoc(id){
   const doc=soDocs.find(d=>d.id===id);if(!doc)return;
   const rows=doc.items.map((it,i)=>`<tr><td style="padding:10px 12px;border-bottom:1px solid #f0f3f7;text-align:center;color:var(--text-muted)">${i+1}</td><td style="padding:10px 12px;border-bottom:1px solid #f0f3f7"><b>${it.pid}</b></td><td style="padding:10px 12px;border-bottom:1px solid #f0f3f7">${it.name}</td><td style="padding:10px 12px;border-bottom:1px solid #f0f3f7;text-align:center">${it.qty}</td><td style="padding:10px 12px;border-bottom:1px solid #f0f3f7;text-align:center">${it.unit}</td><td style="padding:10px 12px;border-bottom:1px solid #f0f3f7;text-align:right">฿${fmt(it.price)}</td><td style="padding:10px 12px;border-bottom:1px solid #f0f3f7;text-align:right"><b>฿${fmt(it.subtotal)}</b></td></tr>`).join('');
   const voidNotice=doc.void?`<div class="alert danger" style="margin-bottom:14px">🚫 ยกเลิกแล้ว — เหตุผล: ${doc.voidReason}</div>`:'';
-  showModal(`<div style="font-size:13px"><div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:16px">คำสั่งซื้อ (SO) ${doc.id}${doc.void?' (ยกเลิกแล้ว)':''}</div>${voidNotice}<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;padding:14px;background:#f8f9fb;border-radius:10px;border:1px solid var(--border)"><div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px">วันที่สร้าง</div><div style="font-weight:600">${formatDateTime(doc.timestamp)}</div></div><div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px">ลูกค้า</div><div style="font-weight:600">${doc.customer||'-'}</div></div><div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px">หมายเหตุ</div><div style="font-weight:600">${doc.note||'-'}</div></div></div><table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px"><thead><tr style="background:#f0f3f8"><th style="padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">#</th><th style="padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">รหัส</th><th style="padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">ชื่อสินค้า</th><th style="padding:9px 12px;text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">จำนวน</th><th style="padding:9px 12px;text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">หน่วย</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">ราคา/หน่วย</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">รวม</th></tr></thead><tbody>${rows}</tbody></table><div style="background:linear-gradient(135deg,#f0f3f8,#e8edf4);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:13px;color:var(--text-muted);font-weight:600">ยอดรวมทั้งสิ้น</span><span style="font-size:22px;font-weight:700;color:var(--primary)">฿${fmt(doc.total)}</span></div>${!doc.void?`<div class="btn-row no-print"><button class="btn btn-primary" onclick="createPickFromSO('${doc.id}')">สร้างใบเบิกจาก SO นี้</button></div>`:''}</div>`);
+  showModal(`<div style="font-size:13px"><div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:16px">คำสั่งขาย (SO) ${doc.id}${doc.void?' (ยกเลิกแล้ว)':''}</div>${voidNotice}<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;padding:14px;background:#f8f9fb;border-radius:10px;border:1px solid var(--border)"><div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px">วันที่สร้าง</div><div style="font-weight:600">${formatDateTime(doc.timestamp)}</div></div><div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px">ลูกค้า</div><div style="font-weight:600">${doc.customer||'-'}</div></div><div><div style="font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px">หมายเหตุ</div><div style="font-weight:600">${doc.note||'-'}</div></div></div><table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px"><thead><tr style="background:#f0f3f8"><th style="padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">#</th><th style="padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">รหัส</th><th style="padding:9px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">ชื่อสินค้า</th><th style="padding:9px 12px;text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">จำนวน</th><th style="padding:9px 12px;text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">หน่วย</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">ราคา/หน่วย</th><th style="padding:9px 12px;text-align:right;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;border-bottom:2px solid var(--border)">รวม</th></tr></thead><tbody>${rows}</tbody></table><div style="background:linear-gradient(135deg,#f0f3f8,#e8edf4);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:13px;color:var(--text-muted);font-weight:600">ยอดรวมทั้งสิ้น</span><span style="font-size:22px;font-weight:700;color:var(--primary)">฿${fmt(doc.total)}</span></div>${!doc.void?`<div class="btn-row no-print"><button class="btn btn-primary" onclick="createPickFromSO('${doc.id}')">สร้างใบเบิกจาก SO นี้</button></div>`:''}</div>`);
 }
 
 function createPickFromSO(soId){
